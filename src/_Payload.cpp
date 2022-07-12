@@ -23,7 +23,7 @@ char calc_crc_7(unsigned long *pCrc, char uData) {
 int main() {
 
 	unsigned long sequential, price, coil, crc_7 = 0;
-	char payload[16], key[];
+	char payload[16], key[]= "...";
 
 	std::cin.read(payload, sizeof(payload));
 

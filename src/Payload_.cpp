@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
 	// ./payload_ -s 123 -c 11 -p 150
 
-	char payload[16], key[];
+	char payload[16], key[]= "...";
 
 	std::ifstream devrandom("/dev/random");
 

@@ -17,6 +17,8 @@
 
 int main() {
 
+	std::cout << "begin..." << std::endl;
+
 	int fd_socket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
 	char buffer[65535];
@@ -33,7 +35,7 @@ int main() {
 			unsigned char h_source[6];
 			unsigned char h_dest[6];
 
-			uint16_t h_proto;
+			uint16_t h_proto; // TODO
 		};
 		EthernetHeader *eth = (EthernetHeader*) &buffer[0]; // 14
 
@@ -57,7 +59,7 @@ int main() {
 		};
 		IpHeader *ip = (IpHeader*) &buffer[ sizeof(EthernetHeader) ]; // 20
 
-		if( ip->protocol == 0x06 /*tcp*/ ){
+		if( ip->protocol == 0x06 ){
 
 			struct TcpHeader {
 
@@ -77,16 +79,24 @@ int main() {
 			};
 			TcpHeader *tcpl = (TcpHeader*) &buffer[ sizeof(EthernetHeader) + sizeof(IpHeader) ];
 
-			if( (((tcpl->dstPort << 8) & 0xff00) | ((tcpl->dstPort >> 8) & 0x00ff)) != 8088 ) continue;
+			if( (((tcpl->dstPort << 8) & 0xff00) | ((tcpl->dstPort >> 8) & 0x00ff)) == 8088 ){
 
-			printf("\nEthernet Header\n");
-			printf("\t|-Source Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n", eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5]);
-			printf("\t|-Destination Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n", eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
-			printf("\t|-Protocol : %d\n", eth->h_proto);
+//				printf(">>> ");
+
+			} else if( ntohs(tcpl->srcPort) == 8088 ){
+
+//				printf("<<< ");
+
+			} else continue;
+
+//			printf("\nEthernet Header\n");
+//			printf("\t|-Source Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n", eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5]);
+//			printf("\t|-Destination Address : %.2X-%.2X-%.2X-%.2X-%.2X-%.2X\n", eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
+//			printf("\t|-Protocol : %d\n", eth->h_proto);
 
 			printf("\nIP Header\n");
 			printf("\t|-Version : %d\n", (ip->version_ihl >> 4) & 0xf );
-			printf("\t|-Internet Header Length : %d Bytes\n", ip->version_ihl & 0xf );
+			printf("\t|-IP Header Length : %d Bytes\n", ip->version_ihl & 0x0f );
 			printf("\t|-Total Length : %d Bytes\n", ntohs(ip->length) );
 			printf("\t|-Identification : %d\n", ntohs(ip->id ) );
 			printf("\t|-Time To Live : %d\n", ip->ttl);
@@ -99,6 +109,7 @@ int main() {
 			printf("\t|-Destination Port : %d\n", ((tcpl->dstPort << 8) & 0xff00) | ((tcpl->dstPort >> 8) & 0x00ff) );
 		   	printf("\t|-Sequence Number      : %u\n", ntohl(tcpl->sequential) );
 		   	printf("\t|-Acknowledge Number   : %u\n", ntohl(tcpl-> ack_seq) );
+		   	printf("\t|-TCP Header Length   	 : %u\n", (tcpl->doff >> 4) & 0b00001111 );
 		   	printf("\t|----------Flags-----------\n");
 		   	printf("\t\t|-Urgent Flag          : %d\n", tcpl->flag >> 5 & 1 );
 		   	printf("\t\t|-Acknowledgement Flag : %d\n", tcpl->flag >> 4 & 1 );
@@ -110,7 +121,10 @@ int main() {
 		    printf("\t|-Checksum             : %d\n", ntohs(tcpl->chksum));
 		    printf("\t|-Urgent Pointer       : %d\n", tcpl->urgent);
 
-			printf("\t|-Urgent Pointer       : %b\n", tcpl->flag );
+//			if(tcpl->flag >> 3 & 1){
+//
+//				std::cout.write( &buffer[ sizeof(EthernetHeader) + (ip->version_ihl & 0x0f)*4 + ((tcpl->doff >> 4) & 0b00001111)*4 ], ntohs(ip->length) - ((ip->version_ihl & 0x0f)*4 + ((tcpl->doff >> 4) & 0b00001111)*4) );
+//			}
 
 //			break;
 		}

@@ -41,7 +41,7 @@ int my_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_
 
 int my_truncate(const char *path, off_t offset, struct fuse_file_info *fi) {
 
-	memset( &hello_str[ offset ], 0, strlen(&hello_str) - offset );
+	memset( &hello_str[ offset ], 0, strlen(hello_str) - offset );
 
 	return 0;
 }
@@ -67,7 +67,7 @@ int my_getattr(const char *path, struct stat *stbuf, struct fuse_file_info *fi) 
 	} else if (strcmp(path, hello_path) == 0) {
 		stbuf->st_mode = S_IFREG | 0666;
 		stbuf->st_nlink = 1;
-		stbuf->st_size = strlen(&hello_str);
+		stbuf->st_size = strlen(hello_str);
 	} else
 		return -ENOENT;
 
